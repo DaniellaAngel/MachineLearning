@@ -27,6 +27,12 @@ for x in xrange(1,10):
 	print classifiers
 print "classifiers1",classifiers
 
+# state = np.random.randint(0,9)
+# if action == 1:
+# 	classifiers[state] = datas.iloc[:,[state]]
+# elif action == 0:
+# 	classifiers.pop(state)
+
 def acc_pred(classifiers_,labels_):
 	add_labels = classifiers_.apply(lambda x: x.sum(), axis=1).values
 	pred_labels = []
@@ -46,50 +52,3 @@ def acc_pred(classifiers_,labels_):
 	return accuracy
 accuracy = acc_pred(classifiers,labels.values.T[0])
 print "accuracy",accuracy
-
-# class classifier_fakegame():
-# 	def _init_(self):
-# 		self.datas = pd.read_csv("data.csv")
-# 		self.labels = pd.read_csv("label.csv")
-# 		self.state = 0
-# 		self.classifiers = pd.DataFrame()
-# 		self.num_classifiers = self.classifiers.values.shape[1]
-# 		self.num_actions = 2
-	
-# 	def getClassifier(self):
-# 		self.state = np.random.randint(0,len(self.datas))
-# 		return self.state
-
-# 	def classifiers(self):
-# 		self.classifiers[self.state] = self.datas.pop(self.state)
-# 	#sum the rows of the array
-# 	def sum_rows(self):
-# 		return self.datas.apply(lambda x: x.sum(), axis=1)
-
-# 	#process the result of adding all the rows,convert it to labels -1 or 1
-# 	def prediction_labels(pred_labels):
-# 		labels = []
-# 		for item in pred_labels:
-# 			if item > 0:
-# 				labels.append(1)
-# 			elif item < 0:
-# 				labels.append(-1)
-# 		return np.asarray(labels), len(labels)
-# 	def count_acc(pred_labels,labels):
-# 		diff_labels = pred_labels - labels
-# 		count = 0
-# 		for item in diff_labels:
-# 			if item == 0:
-# 				count+=1
-# 			else:
-# 				count = count
-# 		return count
-# 	def pullClassifier(self,action):
-
-# 		result = np.random.randn(1)
-# 		if result > classifier:
-# 			return 1
-# 		else:
-# 			return -1
-
-
