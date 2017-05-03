@@ -1,17 +1,6 @@
-"""
-This part of code is the DQN brain, which is a brain of the agent.
-All decisions are made in here.
-Using Tensorflow to build the neural network.
-View more on Python: https://morvanzhou.github.io/tutorials/
-Using:
-Tensorflow: 1.0
-gym: 0.7.3
-"""
-
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-
 np.random.seed(1)
 tf.set_random_seed(1)
 
@@ -111,18 +100,16 @@ class DeepQNetwork:
             self.memory_counter = 0
 
         transition = np.hstack((s, [a, r], s_))
-        print "transition",transition
         # replace the old memory with new memory
         index = self.memory_counter % self.memory_size
-        print "index",index
         self.memory[index, :] = transition
+
         self.memory_counter += 1
 
     def choose_action(self, observation):
+    	# print "choose_action",np.newaxis
         # to have batch dimension when feed into tf placeholder
         observation = observation[np.newaxis, :]
-        print "choose_action observation",observation
-
         if np.random.uniform() < self.epsilon:
             # forward feed the observation and get q value for every actions
             actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})

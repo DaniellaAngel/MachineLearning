@@ -3,7 +3,7 @@ from Brain_RL import QLTable
 
 def update():
 
-	for episode in range(50):
+	for episode in range(10):
 		# initial observation
 		print "run episode======================================================",episode
 		observation = env.reset().columns.values

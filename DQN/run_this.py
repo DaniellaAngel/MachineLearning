@@ -1,35 +1,37 @@
 """
-Reinforcement learning maze example.
-Red rectangle:          explorer.
-Black rectangles:       hells       [reward = -1].
-Yellow bin circle:      paradise    [reward = +1].
-All other states:       ground      [reward = 0].
-This script is the main part which controls the update method of this example.
-The RL is in RL_brain.py.
-View more on Python: https://morvanzhou.github.io/tutorials/
+Sarsa is a online updating method for Reinforcement learning.
+Unlike Q learning which is a offline updating method, Sarsa is updating while in the current trajectory.
+You will see the sarsa is more coward when punishment is close because it cares about all behaviours,
+while q learning is more brave because it only cares about maximum behaviour.
 """
 
 from maze_env import Maze
-from RL_brain import QLearningTable
+from RL_brain import DeepQNetwork
 
 
-def update():
-    for episode in range(100):
+def run_maze():
+    step = 0
+    for episode in range(10):
         # initial observation
+        print "episode===============================================",episode
         observation = env.reset()
+        print "observation",observation
 
         while True:
             # fresh env
             env.render()
 
             # RL choose action based on observation
-            action = RL.choose_action(str(observation))
-
+            action = RL.choose_action(observation)
+            print "action",action
             # RL take action and get next observation and reward
             observation_, reward, done = env.step(action)
+            print "observation_, reward, done",observation_, reward, done
 
-            # RL learn from this transition
-            RL.learn(str(observation), action, reward, str(observation_))
+            RL.store_transition(observation, action, reward, observation_)
+
+            if (step > 200) and (step % 5 == 0):
+                RL.learn()
 
             # swap observation
             observation = observation_
@@ -37,14 +39,24 @@ def update():
             # break while loop when end of this episode
             if done:
                 break
+            step += 1
 
     # end of game
     print('game over')
     env.destroy()
 
-if __name__ == "__main__":
-    env = Maze()
-    RL = QLearningTable(actions=list(range(env.n_actions)))
 
-    env.after(100, update)
-env.mainloop()
+if __name__ == "__main__":
+    # maze game
+    env = Maze()
+    RL = DeepQNetwork(env.n_actions, env.n_features,
+                      learning_rate=0.01,
+                      reward_decay=0.9,
+                      e_greedy=0.9,
+                      replace_target_iter=200,
+                      memory_size=2000,
+                      # output_graph=True
+                      )
+    env.after(100, run_maze)
+    env.mainloop()
+    RL.plot_cost()
