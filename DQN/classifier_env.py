@@ -3,9 +3,10 @@ import numpy as np
 np.random.seed(1)
 import pandas as pd
 import time
+import random
 
 NUM = 99
-GOAL = 0.8326
+GOAL = 0.8342
 
 class Classifier(object):
 	"""docstring for Classifer"""
@@ -13,7 +14,7 @@ class Classifier(object):
 		super(Classifier, self).__init__()
 		self.action_space = ['a','d'] #a----add;d-----delete
 		self.n_actions = len(self.action_space)
-		self.n_features = 1
+		self.n_features = 2
 		self.classifiers = pd.DataFrame()
 		self.dataset = pd.read_csv("datas.csv")
 		self.label = pd.read_csv("labels.csv")
@@ -52,7 +53,6 @@ class Classifier(object):
 		return accuracy
 
 	def reset(self):
-		# time.sleep(0.5)
 		self.origin_state = 1
 		self.classifiers = pd.DataFrame()
 		self.classifiers[self.origin_state] = self.dataset.iloc[:,[self.origin_state]]
@@ -60,30 +60,57 @@ class Classifier(object):
 		return self.classifiers
 
 	def step(self,action):
-		s = np.random.randint(1,NUM)
-		self.classifiers[s] = self.dataset.iloc[:,[s]]
+		s = random.sample(range(NUM),2)
+		d = np.array([1])
+		x = 2
+		nd = np.hstack((d,)*x)
+
+		# print "s=======>",s
+
+		# self.classifiers[s+nd] = self.dataset.iloc[:,s]
+
 		if action ==0: #add
-			self.classifiers[s] = self.dataset.iloc[:,[s]]
+			self.classifiers[s+nd] = self.dataset.iloc[:,s]
 		elif action ==1: #delete
-			self.classifiers.pop(s)
-		print "env classifier",self.classifiers.columns.values
+			dropnN = random.sample(list(self.classifiers.columns.values),2)
+			# print "dropnN",dropnN
+			self.classifiers.drop(dropnN,axis=1,inplace=True)
+
+		if len(self.classifiers.columns.values)%2 == 0:
+			# print "this is =========>2"
+			dropn2 = random.sample(list(self.classifiers.columns.values),1)
+			# print "dropn2",dropn2
+			self.classifiers.drop(dropn2,axis=1,inplace=True)
+
+		# print "length of classifiers3==========>",len(self.classifiers.columns.values)		
+		# print "env classifier values====3>",self.classifiers.columns.values
+
   		pred_labels = self.pred_label()
   		accuracy = self.caculate_acc(pred_labels)
+  		# print "env ,accuracy1========>",accuracy
 
-		s_ = np.random.randint(1,NUM)
-		self.classifiers[s_] = self.dataset.iloc[:,[s_]]
-		print "env s_ classifier values",self.classifiers.columns.values
+		s_ = random.sample(range(NUM),2)
+		# print "s_======>",s_
+		self.classifiers[s_+nd] = self.dataset.iloc[:,s_]
+
+		
+		if len(self.classifiers.columns.values)%2 == 0:
+			# print "this is =========>3"
+			dropn3 = random.sample(list(self.classifiers.columns.values),1)
+			self.classifiers.drop(dropn3,axis=1,inplace=True)
+
+		# print "length of classifiers5==========",len(self.classifiers.columns.values)	
+		# print "env s_ classifier values====5>",self.classifiers.columns.values
+
 		pred_labels_ = self.pred_label()
   		accuracy_ = self.caculate_acc(pred_labels_)
-  		print "env ,accuracy_",accuracy_
+
+  		print "env final accuracy========>",accuracy_
 
 		if accuracy > GOAL:
-			# GOAL = accuracy
 			reward = 1
 			done = True
 		elif accuracy == GOAL:
-			# reward = 0
-			# done = False
 			reward = 1
 			done = True
 
@@ -95,7 +122,7 @@ class Classifier(object):
 				reward = -1
 				done = False
 
-		return s_, reward, done
+		return s_, reward, done, accuracy_
 
 	def render(self):
 		time.sleep(0.1)
