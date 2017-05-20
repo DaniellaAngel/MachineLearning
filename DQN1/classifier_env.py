@@ -6,8 +6,7 @@ import time
 import random
 
 NUM = 99
-GOAL = 0.84
-DIFF = 3800 #the number of less diffrences
+GOAL = 0.8360
 
 class Classifier(object):
 	"""docstring for Classifer"""
@@ -34,20 +33,12 @@ class Classifier(object):
 		else:
 			self.add_labels = self.classifiers.apply(lambda x: x.sum(), axis=1).values
 			self.pred_labels = []
-			self.diff = []
-			count = 0
-			val_length = len(self.classifiers.columns.values)
 			for item1 in self.add_labels:
-				if abs(item1) > (val_length/10)*10:
-					count += 1
-				self.diff.append(item1)
-
 				if item1 > 0:
 					self.pred_labels.append(1)
 				else:
 					self.pred_labels.append(-1)
-
-			return self.pred_labels,count
+			return self.pred_labels
 
 	def caculate_acc(self,pred_value):
 		diff_labels = pred_value - self.label.values.T[0]
@@ -94,7 +85,7 @@ class Classifier(object):
 		# print "length of classifiers3==========>",len(self.classifiers.columns.values)		
 		# print "env classifier values====3>",self.classifiers.columns.values
 
-  		pred_labels, count_arr = self.pred_label()
+  		pred_labels = self.pred_label()
   		accuracy = self.caculate_acc(pred_labels)
   		# print "env ,accuracy1========>",accuracy
 
@@ -111,40 +102,32 @@ class Classifier(object):
 		# print "length of classifiers5==========",len(self.classifiers.columns.values)	
 		# print "env s_ classifier values====5>",self.classifiers.columns.values
 
-		pred_labels_, count_arr_ = self.pred_label()
+		pred_labels_ = self.pred_label()
   		accuracy_ = self.caculate_acc(pred_labels_)
 
   		# print "env accuracy========>",accuracy_
 
 		if accuracy_ > GOAL:
-			# and count_arr_< DIFF:
 			reward = 1
 			done = True
 			print "env accuracy========>",accuracy_
 			print "env final classifier values====>",self.classifiers.columns.values
-			print "length of classifiers==========>",len(self.classifiers.columns.values)
+			print "length of classifiers5==========>",len(self.classifiers.columns.values)
 		elif accuracy_ == GOAL:
-			# and count_arr_< DIFF:
 			reward = 1
 			done = True
 			print "env accuracy========>",accuracy_
 			print "env final classifier values====>",self.classifiers.columns.values
-			print "length of classifiers==========>",len(self.classifiers.columns.values)
+			print "length of classifiers5==========>",len(self.classifiers.columns.values)
 		else:
 			if accuracy < accuracy_:
-				reward = 0
+				reward = 1
 				done = False
-			# if accuracy < accuracy_ or (count_arr_ < count_arr and count_arr_ > DIFF):
-			# 	reward = 0
-			# 	done = False
-			# if accuracy < accuracy_ or (count_arr_ < count_arr and count_arr_ < DIFF):
-			# 	reward = 0
-			# 	done = False
 			else:
 				reward = -1
 				done = False
 
-		return s_, reward, done, accuracy_
+		return np.array(s_), reward, done, accuracy_
 
 	def render(self):
 		time.sleep(0.1)

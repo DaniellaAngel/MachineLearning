@@ -5,7 +5,7 @@ from Brain_RL import DeepQNetwork
 
 def run_classifier():
 	step = 0
-	for episode in range(2):
+	for episode in range(10):
 		# initial observation
 		print "run episode======================================================",episode
 		observation = np.array([0,env.reset().columns.values[0]])
@@ -34,7 +34,7 @@ def run_classifier():
 			if done==True:
 			    break
 			if step%100 == 0:
-				print "##########################","episode=",episode,"step=",step,"the accuracy=",acc,"##########################"
+				print "##########","episode=",episode,"step=",step,"the accuracy=",acc,"##########"
 			step += 1
 
 	print "game over"
