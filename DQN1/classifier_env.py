@@ -66,7 +66,8 @@ class Classifier(object):
 		nd = np.hstack((d,)*x)
 
 		# print "s=======>",s
-
+		print classifiers
+		#状态改成 准确率和长度。
 		self.classifiers[s+nd] = self.dataset.iloc[:,s]
 
 		if action ==0: #add

@@ -1,6 +1,7 @@
 
 
-from classifier_env import Classifier
+# from classifier_env import Classifier
+from classifier import Classifier
 # from Brain_RL import DeepQNetwork
 from doubleDQN import DoubleDQN
 
@@ -10,7 +11,7 @@ import tensorflow as tf
 
 
 env = Classifier()
-MEMORY_SIZE = 3000
+MEMORY_SIZE = 30
 ACTION_SPACE = 2
 
 sess = tf.Session()
@@ -28,9 +29,9 @@ with tf.variable_scope('Double_DQN'):
 sess.run(tf.global_variables_initializer())
 
 def train(RL):
-    total_steps = 0
-    observation = np.array([0,env.reset().columns.values[0]])
+    observation = env.reset()
     print "observation",observation
+    total_steps = 0
     while True:
         # if total_steps - MEMORY_SIZE > 8000: env.render()
 
@@ -40,7 +41,7 @@ def train(RL):
         # f_action = (action-(ACTION_SPACE-1)/2)/((ACTION_SPACE-1)/4)   # convert to [-2 ~ 2] float actions
         # print "action",f_action
         # observation_, reward, done, acc = env.step(np.array([f_action]))
-        observation_, reward, done ,acc= env.step(action)
+        observation_, reward, done ,acc, clen= env.step(action)
         # print observation_, reward, done ,acc
 
         # reward /= 10     # normalize to a range of (-1, 0). r = 0 when get upright
@@ -52,16 +53,17 @@ def train(RL):
         if total_steps > MEMORY_SIZE:   # learning
             RL.learn()
 
-        if total_steps - MEMORY_SIZE > 400000:   # stop game
+        if total_steps - MEMORY_SIZE > 400:   # stop game
             break
 
         observation = observation_
         if total_steps%100 == 0:
-            print "##########step=",total_steps,"the accuracy=",acc,"##########"
+            print "##########step=",total_steps,"the accuracy=",acc,"the length=",clen,"##########"
         total_steps += 1
     return RL.q
-q_natural = train(natural_DQN)
+
 q_double = train(double_DQN)
+q_natural = train(natural_DQN)
 
 plt.plot(np.array(q_natural), c='r', label='natural')
 plt.plot(np.array(q_double), c='b', label='double')
