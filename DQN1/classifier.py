@@ -5,13 +5,7 @@ import pandas as pd
 import time
 import random
 
-INITLEN = 11
-STEPLEN = 10
-DROPNUM = 2
-REFERLEN = 55
-MAXLEN = 99
-REFERACC = 0.8326
-GOALACC = 0.8350
+
 
 class Classifier(object):
 	"""docstring for Classifer"""
@@ -22,6 +16,14 @@ class Classifier(object):
 		self.dataset = pd.read_csv("datas.csv")
 		self.label = pd.read_csv("labels.csv")
 		self.classifiers = pd.DataFrame()
+		self.INITLEN = 11
+		self.STEPLEN = 8
+		self.DROPNUM = 1
+		self.REFERLEN = 55
+		self.MAXLEN = 99
+		self.REFERACC = 0.8326
+		self.GOALACC = 0.8350
+		self.clen = self.INITLEN
 
 	def build_classifier(self):
 		self.classifiers = pd.DataFrame()
@@ -56,14 +58,14 @@ class Classifier(object):
 		return accuracy
 
 	def reset(self):
-		self.init_classifiers = np.array(random.sample(list(self.dataset.columns.values),INITLEN)).astype('int')
-		self.initones = np.hstack((np.array([1]),)*INITLEN)
+		self.init_classifiers = np.array(random.sample(list(self.dataset.columns.values),self.INITLEN)).astype('int')
+		self.initones = np.hstack((np.array([1]),)*self.INITLEN)
 		self.classifiers[self.init_classifiers] = self.dataset.iloc[:,self.init_classifiers-self.initones]
-		if len(self.classifiers.columns.values)%2 == 0:
-			# print "this is =========>2"
-			init_dropn = random.sample(list(self.classifiers.columns.values),1)
-			# print "dropn2",dropn2
-			self.classifiers.drop(init_dropn,axis=1,inplace=True)
+		# if len(self.classifiers.columns.values)%2 == 0:
+		# 	# print "this is =========>2"
+		# 	init_dropn = random.sample(list(self.classifiers.columns.values),1)
+		# 	# print "dropn2",dropn2
+		# 	self.classifiers.drop(init_dropn,axis=1,inplace=True)
 		self.initpred_labels = self.pred_label()
   		self.init_accuracy = self.caculate_acc(self.initpred_labels)
 
@@ -76,8 +78,12 @@ class Classifier(object):
 		# s = self.init_state
 		# print "s=======>",s
 		if action == 0: #add
-			arr0 = np.array(random.sample(list(self.dataset.columns.values),STEPLEN)).astype('int')
-			arrnd = np.hstack((np.array([1]),)*STEPLEN)
+			if self.clen < 60:
+				self.STEPLEN = 10
+				if self.clen < 50:
+					self.STEPLEN = 10
+			arr0 = np.array(random.sample(list(self.dataset.columns.values),self.STEPLEN)).astype('int')
+			arrnd = np.hstack((np.array([1]),)*self.STEPLEN)
 			self.classifiers[arr0] = self.dataset.iloc[:,arr0-arrnd]
 
 			if len(self.classifiers.columns.values)%2 == 0:
@@ -90,7 +96,12 @@ class Classifier(object):
 			s_ = np.array([len(self.classifiers.columns.values),accuracy])
 
 		elif action == 1: #delete
-			dropnN = random.sample(list(self.classifiers.columns.values),DROPNUM)
+			
+			if self.clen > 80:
+				self.DROPNUM = 3
+				if self.clen > 90:
+					self.DROPNUM = 5
+			dropnN = random.sample(list(self.classifiers.columns.values),self.DROPNUM)
 			self.classifiers.drop(dropnN,axis=1,inplace=True)
 
 			if len(self.classifiers.columns.values)%2 == 0:
@@ -102,19 +113,19 @@ class Classifier(object):
 
 			s_ = np.array([len(self.classifiers.columns.values),accuracy])
 
-		clen = len(self.classifiers.columns.values)
+		self.clen = len(self.classifiers.columns.values)
 		result = self.classifiers.columns.values
 		
-		if clen < REFERLEN or clen == REFERLEN:
+		if self.clen < self.REFERLEN or self.clen == self.REFERLEN:
 			r1 = -1
-		elif clen > REFERLEN or clen < MAXLEN:
+		elif self.clen > self.REFERLEN or self.clen < self.MAXLEN:
 			r1 = 1
 		else:
 			r1 = 0
 
-		if accuracy < REFERACC or accuracy == REFERACC:
+		if accuracy < self.REFERACC or accuracy == self.REFERACC:
 			r2 = -1
-		elif accuracy > GOALACC or accuracy == GOALACC:
+		elif accuracy > self.GOALACC or accuracy == self.GOALACC:
 			r2 = 1
 			print "env accuracy========>",accuracy
 			print "env final classifier values====>",self.classifiers.columns.values
@@ -128,15 +139,14 @@ class Classifier(object):
 		else:
 			reward = r1 + r2
 			if reward > 0:
-				done = True
-				
+				done = True	
 			elif reward == 0:
 				done = False
 			else:
 				done = True
 
 
-		return s_, reward, done, accuracy, clen, result
+		return s_, reward, done, accuracy, self.clen, result
 
 		
 	

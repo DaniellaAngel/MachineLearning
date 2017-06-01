@@ -21,7 +21,7 @@ class DoubleDQN:
             learning_rate=0.005,
             reward_decay=0.9,
             e_greedy=0.9,
-            replace_target_iter=300,
+            replace_target_iter=1000,
             memory_size=50,
             batch_size=32,
             e_greedy_increment=None,

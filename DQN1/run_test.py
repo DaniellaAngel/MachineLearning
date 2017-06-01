@@ -11,7 +11,7 @@ import tensorflow as tf
 
 
 env = Classifier()
-MEMORY_SIZE = 300
+MEMORY_SIZE = 3000
 ACTION_SPACE = 2
 
 sess = tf.Session()
@@ -36,7 +36,7 @@ def train(RL):
     total_steps = 0
     while True:
         # if total_steps - MEMORY_SIZE > 8000: env.render()
-        if total_steps < 20:
+        if total_steps < 15:
             action = 0
             observation_, reward, done ,acc, clen, result= env.step(action)
             print clen
@@ -50,7 +50,8 @@ def train(RL):
             # observation_, reward, done, acc = env.step(np.array([f_action]))
             observation_, reward, done ,acc, clen, result= env.step(action)
             # print observation_, reward, done ,acc,clen
-
+            ACCSET.append(acc)
+            LENSET.append(clen)
             # reward /= 10     # normalize to a range of (-1, 0). r = 0 when get upright
             # the Q target at upright state will be 0, because Q_target = r + gamma * Qmax(s', a') = 0 + gamma * 0
             # so when Q at this state is greater than 0, the agent overestimates the Q. Please refer to the final result.
@@ -61,7 +62,7 @@ def train(RL):
                 RL.learn()
 
             ep_r += reward
-            if total_steps - MEMORY_SIZE > 4000:   # stop game
+            if total_steps - MEMORY_SIZE > 40000:   # stop game
                 break
 
             observation = observation_
@@ -73,6 +74,16 @@ def train(RL):
 
 q_double = train(double_DQN)
 # q_natural = train(natural_DQN)
+
+
+
+plt.plot(np.array(LENSET),np.array(ACCSET),'b')
+plt.title("length with accuracy")
+plt.xlabel("length of data")
+plt.ylabel("accuracy of data")
+plt.xlim(55,99)
+plt.ylim(0.83,0.84)
+plt.show()
 
 # plt.plot(np.array(q_natural), c='r', label='natural')
 plt.plot(np.array(q_double), c='b', label='double')
