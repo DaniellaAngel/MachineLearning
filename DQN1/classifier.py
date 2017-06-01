@@ -6,10 +6,12 @@ import time
 import random
 
 INITLEN = 11
-STEPLEN = 9
-DROPNUM = 3
+STEPLEN = 10
+DROPNUM = 2
+REFERLEN = 55
+MAXLEN = 99
 REFERACC = 0.8326
-GOALACC = 0.8360
+GOALACC = 0.8350
 
 class Classifier(object):
 	"""docstring for Classifer"""
@@ -17,11 +19,9 @@ class Classifier(object):
 		super(Classifier, self).__init__()
 		self.action_space = ['a','d'] #a----add;d-----delete
 		self.n_actions = len(self.action_space)
-		self.n_features = 2
 		self.dataset = pd.read_csv("datas.csv")
 		self.label = pd.read_csv("labels.csv")
 		self.classifiers = pd.DataFrame()
-		self.sate = np.random.randint(0,9)
 
 	def build_classifier(self):
 		self.classifiers = pd.DataFrame()
@@ -69,14 +69,13 @@ class Classifier(object):
 
   		self.init_state = np.array([len(self.classifiers.columns.values),self.init_accuracy])
 
-  		print len(self.classifiers.columns.values),self.classifiers.columns.values,self.init_accuracy
+  		# print len(self.classifiers.columns.values),self.classifiers.columns.values,self.init_accuracy
 		return self.init_state
 
 	def step(self,action):
 		# s = self.init_state
 		# print "s=======>",s
 		if action == 0: #add
-
 			arr0 = np.array(random.sample(list(self.dataset.columns.values),STEPLEN)).astype('int')
 			arrnd = np.hstack((np.array([1]),)*STEPLEN)
 			self.classifiers[arr0] = self.dataset.iloc[:,arr0-arrnd]
@@ -103,28 +102,42 @@ class Classifier(object):
 
 			s_ = np.array([len(self.classifiers.columns.values),accuracy])
 
-		print "s_=======>",s_
 		clen = len(self.classifiers.columns.values)
-		print "clen",clen
-		if clen < 50 or accuracy < REFERACC:
-			reward = -1
-			done = True
-		elif clen > 50 and accuracy > GOALACC:
-			reward = 1
-			done = True
-			print "env accuracy========>",accuracy_
+		result = self.classifiers.columns.values
+		
+		if clen < REFERLEN or clen == REFERLEN:
+			r1 = -1
+		elif clen > REFERLEN or clen < MAXLEN:
+			r1 = 1
+		else:
+			r1 = 0
+
+		if accuracy < REFERACC or accuracy == REFERACC:
+			r2 = -1
+		elif accuracy > GOALACC or accuracy == GOALACC:
+			r2 = 1
+			print "env accuracy========>",accuracy
 			print "env final classifier values====>",self.classifiers.columns.values
 			print "length of classifiers5==========>",len(self.classifiers.columns.values)
 		else:
-			reward = 0
-			done = False
+			r2 = 0
 		
+		if r1 == 0 :
+			reward = -1
+			done = True
+		else:
+			reward = r1 + r2
+			if reward > 0:
+				done = True
+				
+			elif reward == 0:
+				done = False
+			else:
+				done = True
 
-		return s_, reward, done, accuracy, clen
 
-	def render(self):
-		time.sleep(0.1)
-		pass
+		return s_, reward, done, accuracy, clen, result
+
 		
 	
 		
